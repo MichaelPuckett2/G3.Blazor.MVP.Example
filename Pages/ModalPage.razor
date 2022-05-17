@@ -1,0 +1,35 @@
+﻿@inject IModalView modalView
+
+<h3>Modal Page</h3>
+
+@if (modalView.IsLoadingData)
+{
+    <h2>loading...</h2>
+}
+else
+{
+    <ul>
+        @foreach (var item in modalView.SomeData)
+        {
+            <li>@item</li>
+        }
+    </ul>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        if (modalView is INotifyPropertyChanged notifyPropertyChanged) 
+            notifyPropertyChanged.PropertyChanged += SampleViewPropertyChanged;
+
+        modalView.RequestData();
+        await base.OnInitializedAsync();
+    }
+
+    private async void SampleViewPropertyChanged(object? sender, PropertyChangedEventArgs e) => await Task.Run(StateHasChanged);
+    public void Dispose()
+    {
+        if (modalView is INotifyPropertyChanged notifyPropertyChanged) 
+            notifyPropertyChanged.PropertyChanged -= SampleViewPropertyChanged;
+    }
+}

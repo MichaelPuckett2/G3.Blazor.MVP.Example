@@ -1,0 +1,49 @@
+﻿@page "/"
+@using BlazorModal
+@inject ISampleView sampleView
+@inject IModalView modalView
+@implements IDisposable
+
+<h1>Sample Page</h1>
+@if (sampleView.IsLoadingData)
+{
+    <h2>loading...</h2>
+}
+else
+{
+    <ul>
+        @foreach (var item in sampleView.SomeData)
+        {
+            <li>@item</li>
+        }
+    </ul>
+}
+
+
+<Modal @ref=modal>
+    <ModalPage />
+</Modal>
+
+<button @onclick=sampleView.RequestData disabled=@sampleView.IsLoadingData>Load Data</button>
+<button @onclick=ShowModal disabled=@sampleView.IsLoadingData>Show Modal</button>
+
+@code {
+    private Modal? modal;
+    private void ShowModal() => modal?.Show();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (sampleView is INotifyPropertyChanged notifyPropertyChanged) 
+            notifyPropertyChanged.PropertyChanged += SampleViewPropertyChanged;
+
+        await base.OnInitializedAsync();
+    }
+
+    private async void SampleViewPropertyChanged(object? sender, PropertyChangedEventArgs e) => await Task.Run(StateHasChanged);
+
+    public void Dispose()
+    {
+        if (sampleView is INotifyPropertyChanged notifyPropertyChanged) 
+            notifyPropertyChanged.PropertyChanged -= SampleViewPropertyChanged;
+    }
+}
